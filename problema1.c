@@ -9,6 +9,8 @@
 #include <sys/time.h>
 #include <signal.h>
 
+#include "cabecera123.h"
+
 
 /*Proyecto de sistemas de operacion (problema 1)
  * Integrantes:
@@ -16,12 +18,6 @@
  * - Miguel Ordoñez
  */
 
-struct intervalo{ //struct intervalo de los numeros a leer por los hilos/procesos
-  int desde;
-  int hasta;
-  int numero;
-};
-int *numeros_archivo; //vector de ambito global para los numeros del archivo
 
 
 struct timeval t0 , t1 ;
@@ -29,59 +25,9 @@ double media = 0.0;
 
 
 
-int esprimo(int n){//dice si un numero es primo o no
- int cont = 0;
-  for (int i = 1; i<=n; i++) if (n%i==0)cont++;
- if (cont == 2) return 1;
- return 0;
-}
 
 
-int contar_lineas_archivo(char *ubicacion){ //cuenta las lineas del fichero de entrada
-  FILE *archivo;
-   char caracter;
-   int i = 0;
-
-  archivo = fopen (ubicacion, "r");
-
-
-  if (archivo==NULL){
-  	printf("\n\nError en la apertura del archivo\n\n");
-  }
-  else{
-
-    while((caracter = fgetc(archivo)) != EOF){
-		if (caracter=='\n') i++;
-	    }
-	    fclose(archivo);
-  }
- return (i);
-}
-
-
-void abrir_archivo(char *ubicacion, int lineas, int *numeros){ //asigna los numeros del archivo al vector global numeros_archivo
-
-   FILE *archivo;
-
-  archivo = fopen (ubicacion, "r");
-
-
-  if (archivo==NULL){
-  	printf("\n\nError en la apertura del archivo\n\n");
-  }
-  else{
-
-    for (int i = 0; i<lineas; i++){
- 	fscanf(archivo,"%d",&numeros[i]);
-    }
-	    fclose(archivo);
-  }
-}
-
-
-
-
-void *fun(void *entero){ //funcion que ejecutan los hilos
+void *fun(void *entero){ //funcion que ejecutan los hilos (propia del problema 1). por eso no esta en el header
 
  struct intervalo *inter = entero;
  unsigned int p;
@@ -91,8 +37,6 @@ void *fun(void *entero){ //funcion que ejecutan los hilos
  printf("SOY EL HILO %i DE ID %x, ", inter->numero, p);
  printf("CREO CON: %i %i \n", inter->desde,inter->hasta);
 
-
-	/*int i = (intptr_t) entero;*/
 
      FILE *archivo;
      char subi = (char)(inter->numero)+'0';
@@ -130,68 +74,11 @@ void *fun(void *entero){ //funcion que ejecutan los hilos
 
 
 
-void imprimir (int *vector, int tamano){
- for (int i=0; i<tamano; i++){
- 	printf ("%i",vector[i]);
- }
-}
 
 
 
-void funpro (struct intervalo inter){ // funcion que ejecutan los procesos
 
-   printf("SOY EL PROCESO %i de id %i ", inter.numero ,getpid());
-   printf("CREO CON: %i %i\n", inter.desde,inter.hasta);
-
-   FILE *archivo;
-
-     char subi = (char)(inter.numero)+'0';
-
-     char stor[5] = ".txt"; 
-     char str1[1];
-     str1[0]= subi;
-
-     if (inter.numero == 10){
-     archivo = fopen ("10.txt", "w+");}
-     else{
-     archivo = fopen (str1, "w+");
-     }
-
- 
-     for (int i=(inter.desde)-1; i<(inter.hasta); i++){
-           if (esprimo(numeros_archivo[i])){
-            fprintf(archivo, "%i %i\n", numeros_archivo[i], 1);
-          }else{
-            fprintf(archivo, "%i %i\n", numeros_archivo[i], 0);
-          }   
-     }
-}
-
-
-void catch_signal_ctrlC(int s) //señal del problema 3
-{
-  printf("I'm sorry dave I'm afraid I can't do that");
-  exit(0);
-}
-
-
-void mostrarerror(){
-    printf ("\n ERROR. La ejecucion debe tener el siguiente formato:\n\n");
-    printf (" ./primos entrada.txt [-p | -t] [n] donde:\n");
-    printf ("\n * entrada.txt son los numeros a procesar (debe existir)\n");
-    printf ("\n * p o t indica si los numeros van a ser procesados por hilos y procesos\n");
-    printf ("\n * n es la cantidad de hilos/procesos a crear\n");
-    printf ("\n * n debe estar entre 1 y 10\n\n\n");
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////PRINCIPAL//////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
 
 int main (int argc, char *argv[]){
 
@@ -260,7 +147,6 @@ int main (int argc, char *argv[]){
 
 
 
-
   //////////////////////////////////se crean y unen hilos//////////////////////////////////
   for (int i=1; i<=cant_trabajadores; i++){
 
@@ -296,7 +182,6 @@ int main (int argc, char *argv[]){
   printf ( " \n\n Tiempo de ejecucion con %i hilos: %f microsegundos\n" , h[3] , (media/cant_trabajadores));
   /* Tiempo medio medido en microsegundos*/ 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
   }//termina el caso de ser hilos
@@ -337,13 +222,10 @@ else if (strcmp(argv[2],"-p")==0){
         inter.hasta=d2;
         inter.numero=i;
 
-       //printf("SOY EL PROCESO %i ", getpid());
-
 
   id = fork ();
 
       if ( id == 0) {
-     //sleep(1);
      funpro(inter);
       break;
     }
@@ -351,10 +233,6 @@ else if (strcmp(argv[2],"-p")==0){
 
 
 
-// while (1);
-
-
- 
 
    if ( id != 0) {
     sleep(1);
@@ -363,17 +241,17 @@ else if (strcmp(argv[2],"-p")==0){
     unsigned int ut0 = t0 . tv_sec *1000000+ t0 . tv_usec ;
     printf ( " \n\n Tiempo de ejecucion con %i procesos: %i microsegundos\n" , h[3] ,(( ut1 - ut0 )/cant_trabajadores)-10000);
     /* Tiempo medio medido en microsegundos*/ 
-    //catch_signal_ctrlC(1);
    } 
-
-
 
 } // termina el caso de ser procesos
 
 
 
 
-   }
+
+
+
+   } // termina el else de si la entrada es valida
 
 
  }//termina el else de la cantidad de argumentos
