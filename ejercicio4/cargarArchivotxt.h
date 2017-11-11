@@ -6,7 +6,7 @@
 // ------ Variables globales --------
 
 struct Bicicleta{
-   char *hora;
+   const char *hora;
    int sentido;
    Bicicleta *prox;
 };
