@@ -5,6 +5,8 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "cabecera123.h"
+
 
 
 /*Proyecto de sistemas de operacion (problema 2)
@@ -13,122 +15,33 @@
  * - Miguel Ordoñez
  */
 
-struct intervalo{ //struct intervalo de los numeros a leer por los hilos/procesos
-  int desde;
-  int hasta;
-  int numero;
-};
-int *numeros_archivo; //vector de ambito global para los numeros del archivo
-int numero_primos;
-
-
-int esprimo(int n){//dice si un numero es primo o no
-
- int cont = 0;
-
-  for (int i = 1; i<=n; i++){
-    if (n%i==0)cont++;
-  }
-
- if (cont == 2) return 1;
- return 0;
-}
-
-
-int contar_lineas_archivo(char *ubicacion){ //cuenta las lineas del fichero de entrada
-  FILE *archivo;
-   char caracter;
-   int i = 0;
-
-  archivo = fopen (ubicacion, "r");
-
-
-  if (archivo==NULL){
-  	printf("\n\nError en la apertura del archivo\n\n");
-  }
-  else{
-
-    while((caracter = fgetc(archivo)) != EOF){
-		if (caracter=='\n') i++;
-	    }
-	    fclose(archivo);
-  }
- return (i);
-}
-
-
-void abrir_archivo(char *ubicacion, int lineas, int *numeros){ //asigna los numeros del archivo al vector global numeros_archivo
-
-   FILE *archivo;
-
-  archivo = fopen (ubicacion, "r");
-
-
-  if (archivo==NULL){
-  	printf("\n\nError en la apertura del archivo\n\n");
-  }
-  else{
-
-    for (int i = 0; i<lineas; i++){
- 	fscanf(archivo,"%d",&numeros[i]);
-    }
-	    fclose(archivo);
-  }
-}
 
 
 
-
-void *fun(void *entero){ //funcion que ejecutan los hilos
+void *fun(void *entero){ //funcion que ejecutan los hilos (propia del pronlema 2) - por eso no esta en el header
 
  struct intervalo *inter = entero;
 
- printf("CREO CON: %i %i \n", inter->desde,inter->hasta);
-
-
-     /*fprintf(archivo,"%i %i\n" , numeros[0],numeros[1]);*/
 
      for (int i=(inter->desde)-1; i<(inter->hasta); i++){
            if (esprimo(numeros_archivo[i])){
             numero_primos++;}
      }
 
-
-     unsigned int p;
-     p = pthread_self(); // id del hilo
-     printf("Soy el hiloo %i de id %x \n", inter->numero,p);//el hilo saluda
-
      pthread_exit(NULL); 
 }
 
 
 
-void imprimir (int *vector, int tamano){
- for (int i=0; i<tamano; i++){
- 	printf ("%i",vector[i]);
- }
-}
 
-
-void crearvector(int tamano){ // asigna un tamaño de memoria al vector global numeros_archivo, todo a partir de la cant de lineas registrada
-  numeros_archivo = malloc(tamano*sizeof(int));
-}
-
-
-
+////////////////////////////////////////////////PRINCIPAL//////////////////////////////////////////////////////////////
 
 int main (int argc, char *argv[]){
 
  int h[3];//vector h va a contener los enteros de entrada
 
 
- if (argc!=3) {//
-    printf ("\n ERROR. La ejecucion debe tener el siguiente formato:\n\n");
-    printf (" ./primosn entrada.txt [n] donde:\n");
-    printf ("\n * entrada.txt son los numeros a procesar\n");
-    printf ("\n * n es la cantidad de hilos a crear\n\n\n");
-    printf ("\n * los hilos se encargaran de devolver la cantidad de primos hallados\n");
-  }
+ if (argc!=3) {mostrarerror();}
 
 
  else{
@@ -139,18 +52,10 @@ int main (int argc, char *argv[]){
   printf ("\n\n\n");	
 
 
-  	/*Documentacion de los vectores argv , h y el entero argc
-  	 *
-  	 * argv guarda todos los datos de entrada por espacios, sean strings , caracteres o enteros.
-  	 * h guarda los enteros de argv , cuya posicion del entero no cambia en ambos, sigue siendo la misma.
-  	 * argc guarda la cantidad de datos de entrada(entero). Ejemplo: ./ejecutable 87 p => argc= 3.
-  	 */
-
-
 
  ///se lee archivo y se asignan los numeros a un vector
    int cant_lineas = contar_lineas_archivo(argv[1]);
-   crearvector(cant_lineas);
+   numeros_archivo = malloc(cant_lineas*sizeof(int));
    int tamano= sizeof(numeros_archivo)/sizeof(int);
    abrir_archivo(argv[1],cant_lineas,numeros_archivo); // abre el archivo
 
@@ -198,10 +103,9 @@ int main (int argc, char *argv[]){
   inter->hasta=d2;
   inter->numero=i;
 
-    /*printf("MANDO EL: %i %i", inter->desde,inter->hasta);*/
 
 
-  pthread_create(&hilos[i], NULL, /*(void *)*/fun, /*(void *)(intptr_t)i*/inter);
+  pthread_create(&hilos[i], NULL, fun, inter);
   }
    
 
@@ -209,6 +113,9 @@ int main (int argc, char *argv[]){
   pthread_join(hilos[i],NULL);// se van uniendo todos los hilos
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
   printf ("\n\n Cantidad de primos en el archivo: %i\n\n\n", numero_primos);
