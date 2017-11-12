@@ -48,7 +48,10 @@ de lo contrario, sale la alerta "Violación de segmento (`core' generado)" */
       while(!feof(archivo)){
 
          fgets(bici,maximoCaracteres,archivo);
-         b = agregarBicicleta(b,bici);
+         
+         //Para evitar que el último registro se agregue do veces
+         if(!feof(archivo))
+            b = agregarBicicleta(b,bici);
 
       }
 
