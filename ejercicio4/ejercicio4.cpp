@@ -1,83 +1,67 @@
+//---------- Librerías Propias -----------
+
 #include "semaforo.h"
 #include "cargarArchivotxt.h"
 
 
-//AQUI
+//---------- Librerías de C -----------
+
 #include <sys/types.h>
 #include <unistd.h>
-#include <stdio.h>
 #include <sys/mman.h>
+
+
+//---------- Funciones de Principales -----------
 
 void bisRigth();
 void bisLeft();
 void* crearMemoriaCompartida(size_t size);
-Bicicleta* obtenerBicicleta();
-
-sem_t *Final;
-const char *semName2 = "Semaphore2";
-
-const char *HoraSistema = (char*)crearMemoriaCompartida(sizeof (char*)); 
-//Se inicializa en ""
-
-int *posActual = (int*)crearMemoriaCompartida(sizeof (int*));
-//Se inicializa en 0
 
 
+//---------- Funciones de Secundarias -----------
 
+void inicializarVariablesGlobales();
 
+void verificarHora(Bicicleta *aux, sem_t *semPropio, sem_t *semHermano);
+int verificarEstadoProcesoHermano();
 
-void compararHora(Bicicleta *aux, sem_t *semPropio, sem_t *semHermano);
-void imprimirBici(Bicicleta *aux);
 Bicicleta* obtenerBici(int sentido,int *minimo);
+void imprimirBici(Bicicleta *aux);
+
+//int verificarSentido(Bicicleta *aux);
+
+
+// --------- Semáforos ---------
 
 sem_t *SemD = inicializarSemaforo(0,"Derecha");
 sem_t *SemI = inicializarSemaforo(0,"Izquierda");
 
-//Hasta
 
+// -------- Varables "Normales" -----------
 
-
-sem_t *Semaforo;
-const char *semName = "Semaphore";
 const char *ubicacion = "entrada2.txt";
 
+//Estados
+int on = 1;
+int off = 0; 
 
+
+// ----- Variables Compartidas -------
+
+char *horaSendero = (char*)crearMemoriaCompartida(sizeof (char*));
+int *sentidoSendero = (int*)crearMemoriaCompartida(sizeof (int*));
+int *estadoProcesoHermano = (int*)crearMemoriaCompartida(sizeof (int*));
 
 
 int main(){
 
    cargarArchivotxt(ubicacion);
-   Semaforo = inicializarSemaforo(1,semName);
-   
-   Final = inicializarSemaforo(0,semName2);
+   //Se carga el archivo txt en la estructura Bicicleta
+
+   inicializarVariablesGlobales();
 
 
-/*
-pid_t pid;
- int x;
- 
- for(x=1;x<=3;x++)
- {
-  
-  pid=fork();
-   printf("PID: %i      ",pid); 
-  if(pid)
-  {
-   printf("PID2: %i     ",pid); 
-   printf("Soy el proceso %d \n",getpid());
-   sleep(2);
-  }
 
-  else
-  {
-   printf("soy el hijo %d, mi padre es %d\n",getpid(),getppid());
-   sleep(2);
-   exit(0);
-  }
-  
- }*/
-
-   b->prox->prox->prox->prox = NULL;
    //borrarSemaforo(Semaforo, semName);
    printf(" HOLA!!!!!!!!!!! \n\n");
 
@@ -93,10 +77,10 @@ pid_t pid;
 
       //Hijo_2
       if(pid2 == 0){
-         down(Semaforo);
-         b1 = obtenerBicicleta();
          bisRigth();
-         up(Semaforo);
+
+         //Para que no se haga pasar por el padre
+         pid1 = 0;
       }
       else
          sleep(3);
@@ -104,46 +88,21 @@ pid_t pid;
    }
 
    //Hijo_1
-   else{
-
-      down(Semaforo);
-      b2 = obtenerBicicleta();
+   else
       bisLeft();
-      up(Semaforo);
 
-   }
 
-   //printf("QUE PASA PS \n");
    if(pid1 != 0){
-      //down(Semaforo);
-      //down(Final);
-      //borrarSemaforo(Semaforo, semName);
-      //borrarSemaforo(Final, semName2);
-      //printf("X: %i", *x);
-      //sleep(5);
       borrarSemaforo(SemI, "Izquierda");
       borrarSemaforo(SemD, "Derecha");
    }
-   else{
-      //down(Semaforo);
-      //printf("YA yo termine");
-      //printf("X HIJO: %i", *x);
-      //up(Final);
-   }
       
-   
-
-   
-
    printf("\n\n");
    return 0;
 
 } 
 
 
-
-char *horaBicis = (char*)crearMemoriaCompartida(sizeof (char*));
-//horaBicis = NULL;
 
 
 void bisRigth(){
@@ -160,22 +119,27 @@ void bisRigth(){
          break;
       }
 
-      compararHora(aux,SemD,SemI);
+      verificarHora(aux,SemD,SemI);
+
+      //Asignar un sendero al sendero
+      *sentidoSendero = aux->sentido;
 
       posD++;
       imprimirBici(aux);
 
    }
 
-   printf("HE SALIDO DE BISRIGTH \n");
-   //printf("Sendero Derecha: %s ",aux->hora);
-   //sleep(1);
+   //Ha "fallecido" terminado el proceso
+   *estadoProcesoHermano = off;
+
+   printf("HE SALIDO DE BISRIGTH \n"); 
 
 }
 
 
 
 void bisLeft(){
+
 
    int posI = 0;
    Bicicleta* aux;
@@ -189,18 +153,20 @@ void bisLeft(){
          break;
       }
 
-      compararHora(aux,SemI,SemD);
+      verificarHora(aux,SemI,SemD);
+
+      //Asignar un sendero al sendero
+      *sentidoSendero = aux->sentido;
 
       posI++;
       imprimirBici(aux);
 
    }
 
+   //Ha "fallecido" terminado el proceso
+   *estadoProcesoHermano = off;
+
    printf("HE SALIDO DE BISLEFT \n");
-
-
-   //printf("Sendero Izquierda: %s ",aux->hora);
-   //sleep(1);
 
 }
 
@@ -221,39 +187,34 @@ void* crearMemoriaCompartida(size_t size) {
 
 
 
-Bicicleta* obtenerBicicleta(){
-   
-   Bicicleta *aux = b;
-   int posicion = 0;
+void inicializarVariablesGlobales(){
 
-   if( (aux != NULL)&&(posicion != *posActual) ){
-      aux = aux->prox;
-      posicion++;
-   }
-
-   //Aumenta la bicicleta actual
-   (*posActual)++;
-
-   return aux;
+   *estadoProcesoHermano = on;
+   *sentidoSendero = -1;
+   strcpy(horaSendero,"");
 
 }
 
 
+void verificarHora(Bicicleta *aux, sem_t *semPropio, sem_t *semHermano){
 
-void compararHora(Bicicleta *aux, sem_t *semPropio, sem_t *semHermano){
-
-   if(horaBicis == NULL){
-      strcpy(horaBicis,aux->hora);
-      down(semPropio);
+   //Entra la primera vez
+   if(strcmp("",horaSendero) == 0){
+      strcpy(horaSendero,aux->hora);
+      down(semPropio); 
    }
+
+   //Ya existe una hora en el sendero
    else{
 
-      int respuesta = strcmp(aux->hora,horaBicis);
+      int respuesta = strcmp(aux->hora,horaSendero);
 
-      if(respuesta > 0){
+      if( (respuesta > 0)&&(verificarEstadoProcesoHermano() == 0) ){
+
+         strcpy(horaSendero,aux->hora);
          up(semHermano);
-         strcpy(horaBicis,aux->hora);
          down(semPropio);
+
       }
 
    }
@@ -262,13 +223,15 @@ void compararHora(Bicicleta *aux, sem_t *semPropio, sem_t *semHermano){
 }
 
 
+int verificarEstadoProcesoHermano(){
 
-void imprimirBici(Bicicleta *aux){
-
-   printf("  %s  %i  \n ",aux->hora,aux->sentido);
+   //Se debe verificar que el proceso hermano siga vivo
+   if(*estadoProcesoHermano == off)
+      return 1;
+   else
+      return 0;
 
 }
-
 
 
 Bicicleta* obtenerBici(int sentido,int *minimo){
@@ -276,7 +239,7 @@ Bicicleta* obtenerBici(int sentido,int *minimo){
    Bicicleta *aux = b;
    int posicion = 0;
 
-   if( (aux != NULL) && ( (posicion < *minimo)||(aux->sentido != sentido) ) ){
+   while( (aux != NULL) && ( (posicion < *minimo)||(aux->sentido != sentido) ) ){
       aux = aux->prox;
       posicion++;
    }
@@ -288,10 +251,27 @@ Bicicleta* obtenerBici(int sentido,int *minimo){
 }
 
 
+void imprimirBici(Bicicleta *aux){
+
+   printf("  %s  %i  \n ",aux->hora,aux->sentido);
+
+}
 
 
+int verificarSentido(Bicicleta *aux){
 
+   //Se debe verificar que el proceso hermano siga vivo
+   if(*estadoProcesoHermano == off)
+      return 1;
+   else
+      return 0;
 
+   //if(*sentidoSendero == aux->sentido)
+     // return 1;
+   //else
+     // return 0; 
+
+}
 
 
 
