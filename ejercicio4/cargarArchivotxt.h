@@ -49,7 +49,7 @@ de lo contrario, sale la alerta "Violación de segmento (`core' generado)" */
 
          fgets(bici,maximoCaracteres,archivo);
          
-         //Para evitar que el último registro se agregue do veces
+         //Para evitar que el último registro se agregue dos veces
          if(!feof(archivo))
             b = agregarBicicleta(b,bici);
 
