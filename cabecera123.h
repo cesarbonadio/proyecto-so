@@ -33,6 +33,7 @@ int contar_lineas_archivo(char *ubicacion){ //cuenta las lineas del fichero de e
 
   if (archivo==NULL){
   	printf("\n\nError en la apertura del archivo\n\n");
+    exit (-1);
   }
   else{
 
@@ -55,6 +56,7 @@ void abrir_archivo(char *ubicacion, int lineas, int *numeros){ //asigna los nume
 
   if (archivo==NULL){
   	printf("\n\nError en la apertura del archivo\n\n");
+    exit(-1);
   }
   else{
 
@@ -107,13 +109,31 @@ void catch_signal_ctrlC(int s) //señal
 
 void mostrarerror(){
     printf ("\n ERROR. La ejecucion debe tener el siguiente formato:\n\n");
-    printf (" ./primos entrada.txt [-p | -t] [n] donde:\n");
+    printf (" ./primos entrada.txt [-p | -t] [n N] donde:\n");
     printf ("\n * entrada.txt son los numeros a procesar (debe existir)\n");
     printf ("\n * p o t indica si los numeros van a ser procesados por hilos y procesos\n");
     printf ("\n * n es la cantidad de hilos/procesos a crear\n");
     printf ("\n * n debe estar entre 1 y 10\n\n\n");
 }
 
+
+void mostrarerror2(){
+    printf ("\n ERROR. La ejecucion debe tener el siguiente formato:\n\n");
+    printf (" ./primosn entrada.txt [n N] donde:\n");
+    printf ("\n * entrada.txt son los numeros a procesar (debe existir)\n");
+    printf ("\n * n es la cantidad de hilos a crear\n");
+    printf ("\n * n debe estar entre 1 y 10\n\n\n");
+}
+
+
+void mostrarerror3(){
+    printf ("\n ERROR. La ejecucion debe tener el siguiente formato:\n\n");
+    printf (" ./primosm entrada.txt [-p] [n N] donde:\n");
+    printf ("\n * p indica que se van a crear procesos\n");
+    printf ("\n * entrada.txt son los numeros a procesar (debe existir)\n");
+    printf ("\n * n es la cantidad de procesos a crear\n");
+    printf ("\n * n debe estar entre 1 y 10\n\n\n");
+}
 
 
 void imprimir (int *vector, int tamano){

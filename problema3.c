@@ -23,10 +23,10 @@
 
 int main (int argc, char *argv[]){
 
- int h[3];//vector h va a contener los enteros de entrada
+ int h[4];//vector h va a contener los enteros de entrada
 
 
- if (argc!=3) {mostrarerror();} // si no hay 4 argumentos hay error
+ if (argc!=4) {mostrarerror3();} // si no hay 3 argumentos hay error
 
 
 
@@ -48,9 +48,7 @@ int main (int argc, char *argv[]){
 
 
 
-
-
- if (((strcmp(argv[2],"-t")!=0)&&((strcmp(argv[2],"-p")!=0)))||(!((h[3]>=1)&&(h[3]<=10)))){mostrarerror();}
+ if ( (strcmp(argv[2],"-p")!=0)  ||  (!((h[3]>=1)&&(h[3]<=10))) ) {mostrarerror3();}
 
 
 
@@ -103,6 +101,12 @@ if (strcmp(argv[2],"-p")==0){
     signal(SIGINT, catch_signal_ctrlC);
     while(1);
    } 
+
+
+    else if (id < 0){ // Error creando procesos
+    printf ("Error creando procesos");
+    exit(-1);
+   }
 
 
 }// es proceso

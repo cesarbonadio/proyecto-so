@@ -41,7 +41,7 @@ int main (int argc, char *argv[]){
  int h[3];//vector h va a contener los enteros de entrada
 
 
- if (argc!=3) {mostrarerror();}
+ if (argc!=3) {mostrarerror2();}
 
 
  else{
@@ -97,15 +97,30 @@ int main (int argc, char *argv[]){
   d2 = i * trabajo;
   }
 
+
+
   struct intervalo *inter;
   inter = malloc(sizeof(struct intervalo));
+
+if (!inter){
+    printf ("\n Error. Sin memoria\n "); //excepcion si no hay memoria
+    exit(-1);
+  }
+
   inter->desde=d1;
   inter->hasta=d2;
   inter->numero=i;
 
 
 
-  pthread_create(&hilos[i], NULL, fun, inter);
+  int posible_error_hilo = pthread_create(&hilos[i], NULL, fun, inter);
+
+    if (posible_error_hilo){
+      printf ("\n Error creando un hilo\n"); //excepcion si no se crea un hilo
+      free (inter);
+      exit(-1);
+    }
+
   }
    
 

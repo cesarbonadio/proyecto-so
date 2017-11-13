@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "cabecera123.h"
 
@@ -20,7 +21,7 @@
 
 
 
-struct timeval t0 , t1 ;
+struct timeval t0,t1 ; //estructuras para medir los tiempos de ejecucion
 double media = 0.0;
 
 
@@ -62,13 +63,13 @@ void *fun(void *entero){ //funcion que ejecutan los hilos (propia del problema 1
 
    
      
-     free(inter);
+     free(inter); // libera el espacio de memoria
   
-     //esto esta malo por ahora
      gettimeofday (& t1 , NULL );
      unsigned int ut1 = t1 . tv_sec *1000000+ t1 . tv_usec ;
      unsigned int ut0 = t0 . tv_sec *1000000+ t0 . tv_usec ;
      media += ( ut1 - ut0 );
+
      pthread_exit(NULL); 
 }
 
@@ -134,22 +135,17 @@ int main (int argc, char *argv[]){
 
 
   if (strcmp(argv[2],"-t")==0){
+
     printf ("\n\nQuiero ejecutar Hilos\n");
 
-    struct timeval t0 , t1 ;
-    int i = 0;
-    int id = -1;
-    double media = 0.0;
 
-
-  pthread_t hilos[cant_trabajadores]; // vector de hilos
-
-
+    pthread_t hilos[cant_trabajadores]; // vector de hilos
 
 
   //////////////////////////////////se crean y unen hilos//////////////////////////////////
   for (int i=1; i<=cant_trabajadores; i++){
 
+    gettimeofday (&t0,NULL);
 
   if (i == cant_trabajadores){
   d1 = d1 + trabajo;
@@ -161,28 +157,35 @@ int main (int argc, char *argv[]){
 
   struct intervalo *inter;
   inter = malloc(sizeof(struct intervalo));
+
+ 
+    if (!inter){
+    printf ("\n Error. Sin memoria\n "); //excepcion si no hay memoria
+    exit(-1);
+  }
+
   inter->desde=d1;
   inter->hasta=d2;
   inter->numero=i;
 
+  int posible_error_hilo = pthread_create(&hilos[i],NULL,fun,inter);
 
-  pthread_create(&hilos[i],NULL,fun,inter);
+    if (posible_error_hilo){
+      printf ("\n Error creando un hilo\n"); //excepcion si no se crea un hilo
+      free (inter);
+      exit(-1);
+    }
+
+    pthread_join(hilos[i],NULL);// se van uniendo todos los hilos al hilo padre
   }
    
   
 
 
-  for (int i=1; i<=cant_trabajadores; i++){
-  pthread_join(hilos[i],NULL);// se van uniendo todos los hilos
-  }
-
-
-  //sleep(1);
- 
-  printf ( " \n\n Tiempo de ejecucion con %i hilos: %f microsegundos\n" , h[3] , (media/cant_trabajadores));
-  /* Tiempo medio medido en microsegundos*/ 
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
+  printf ( " \n\nTiempo de ejecucion con %i hilos: %f microsegundos\n" , cant_trabajadores , media/1.0); /* Tiempo medio medido en microsegundos*/
+  float cant_trabajadores_flotante = (float)cant_trabajadores; 
+  printf (" \n\nCada hilo duro un aproximado de : %f microsegundos\n\n", media/ cant_trabajadores_flotante);
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 
   }//termina el caso de ser hilos
 
@@ -194,21 +197,21 @@ int main (int argc, char *argv[]){
 
 
 
+
 else if (strcmp(argv[2],"-p")==0){
+
+  
     printf ("\n\nQuiero ejecutar procesos\n");
     printf ("Proceso padre: %i \n\n\n", getpid());
 
-    struct timeval t0 , t1 ;
     int i = 0;
     int id = -1;
-    int procesos[cant_trabajadores];
-    gettimeofday (& t0 , NULL ) ;
+    gettimeofday (&t0,NULL);
 
 
-   for ( i=1 ; i <=cant_trabajadores; i++) {
 
+   for (i=1 ; i<=cant_trabajadores; i++) {
 
-    
          if (i == cant_trabajadores){
         d1 = d1 + trabajo; 
         d2 = i * trabajo + (cant_lineas%cant_trabajadores);
@@ -223,26 +226,40 @@ else if (strcmp(argv[2],"-p")==0){
         inter.numero=i;
 
 
-  id = fork ();
+        id = fork ();
 
       if ( id == 0) {
      funpro(inter);
       break;
-    }
+      }
+
+      else if (id < 0){
+        printf ("Error creando uno de los procesos");
+      }
+  
   }
 
 
-
-
-   if ( id != 0) {
+   
+   if ( id  >  0) { // padre
+    
+    for (int i = 0;  i < cant_trabajadores; i++) waitpid(id, 0, 0);
     sleep(1);
-    gettimeofday (& t1 , NULL );
-    unsigned int ut1 = t1 . tv_sec *1000000+ t1 . tv_usec ;
-    unsigned int ut0 = t0 . tv_sec *1000000+ t0 . tv_usec ;
-    printf ( " \n\n Tiempo de ejecucion con %i procesos: %i microsegundos\n" , h[3] ,(( ut1 - ut0 )/cant_trabajadores)-10000);
-    /* Tiempo medio medido en microsegundos*/ 
+
+    gettimeofday (&t1, NULL);
+    unsigned int ut1 = t1.tv_sec *1000000+ t1.tv_usec ;
+    unsigned int ut0 = t0.tv_sec *1000000+ t0.tv_usec ;
+
+    printf ("\n\nTiempo de ejecucion con %i procesos: %f microsegundos\n" , cant_trabajadores ,((ut1 - ut0)/1.0)-1000000); /* Tiempo medio medido en microsegundos*/
+    float cant_trabajadores_flotante = (float)cant_trabajadores; 
+    printf (" \n\nCada proceso duro un aproximado de : %f microsegundos\n\n", ((ut1-ut0-1000000)/ cant_trabajadores_flotante));
    } 
 
+
+   else if (id < 0){ // Error
+    printf ("Error creando procesos");
+    exit(-1);
+   }
 } // termina el caso de ser procesos
 
 
