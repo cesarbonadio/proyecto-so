@@ -1,7 +1,4 @@
-// ------- Librerías --------
-
-#include <string.h> 
-
+#include <string.h>
 
 // ------ Variables globales --------
 
@@ -13,7 +10,7 @@ struct Bicicleta{
 
 Bicicleta *b = NULL;
 
-const int maximoCaracteres = 20;
+const int maximoCaracteres = 15;
 const int derecha = 0;
 const int izquierda = 1;
 
@@ -21,9 +18,10 @@ const int izquierda = 1;
 // ------- Cabecera de funciones --------
 
 Bicicleta* cargarArchivotxt(const char *ubicacion);
-Bicicleta* agregarBicicleta(Bicicleta *b, char *bici);
 
-void mostrarLista(Bicicleta *b);
+Bicicleta* agregarBicicleta(Bicicleta *b, char *bici);
+Bicicleta* obtenerBicicletaConSentido(int sentido,int *minimo);
+
 char* subString(char *cadenaFuente, int desde, int hasta);
 int obtenerSentido(char *cadenaFuente);
 
@@ -57,8 +55,6 @@ de lo contrario, sale la alerta "Violación de segmento (`core' generado)" */
 
       fclose(archivo);
 
-      printf("\n  SALIDA");
-      mostrarLista(b);
    }
 
    return b;
@@ -99,13 +95,19 @@ Bicicleta* agregarBicicleta(Bicicleta *b, char *bici){
 }
 
 
+Bicicleta* obtenerBicicletaConSentido(int sentido,int *minimo){
 
-void mostrarLista(Bicicleta *b){
+   Bicicleta *aux = b;
+   int posicion = 0;
 
-   if(b != NULL){
-      printf("\n %s  %i",b->hora,b->sentido);
-      mostrarLista(b->prox);
+   while( (aux != NULL) && ( (posicion < *minimo)||(aux->sentido != sentido) ) ){
+      aux = aux->prox;
+      posicion++;
    }
+
+   *minimo = posicion;
+
+   return aux;
 
 }
 
