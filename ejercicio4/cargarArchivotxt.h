@@ -6,7 +6,7 @@
 // ------ Variables globales --------
 
 struct Bicicleta{
-   const char *hora;
+   char *hora;
    int sentido;
    Bicicleta *prox;
 };
@@ -115,15 +115,19 @@ char* subString(char *cadenaFuente, int desde, int hasta){
    int pos = 0;
    char *cadenaDestino = new char;
 
+   //En caso de que la cadena de origen sea NULL
+   if(cadenaFuente != NULL){
 
-   for(int i = desde; i <= hasta; i++){
+      for(int i = desde; i <= hasta; i++){
 
-      cadenaDestino[pos] = cadenaFuente[i];
-      pos++;
+         cadenaDestino[pos] = cadenaFuente[i];
+         pos++;
+
+      }
+
+      cadenaDestino[pos] = '\0';
 
    }
-
-   cadenaDestino[pos] = '\0';
 
    return cadenaDestino;
 

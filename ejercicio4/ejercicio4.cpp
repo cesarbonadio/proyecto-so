@@ -6,6 +6,7 @@
 
 //---------- Librerías de C -----------
 
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/mman.h>
@@ -15,27 +16,27 @@
 
 void bisRigth();
 void bisLeft();
-void* crearMemoriaCompartida(size_t size);
 
-
-//---------- Funciones de Secundarias -----------
+void elegirCamino(Bicicleta *bici, int direccion);
 
 void inicializarVariablesGlobales();
+void* crearMemoriaCompartida(size_t size);
 
-void verificarHora(Bicicleta *aux, sem_t *semPropio, sem_t *semHermano);
-int verificarEstadoProcesoHermano();
+char* sumarUNAunidad(char *horaBici);
 
 Bicicleta* obtenerBici(int sentido,int *minimo);
 void imprimirBici(Bicicleta *aux);
 
-//int verificarSentido(Bicicleta *aux);
 
+void contarBicicleta(int sentidoActual);
+void sumarDOSunidades();
 
-// --------- Semáforos ---------
+// --------- Semáforo ---------
 
-sem_t *SemD = inicializarSemaforo(0,"Derecha");
-sem_t *SemI = inicializarSemaforo(0,"Izquierda");
+sem_t *mutex = inicializarSemaforo(1,"Mutex");
 
+sem_t *semA = inicializarSemaforo(0,"SemA");
+sem_t *semB = inicializarSemaforo(0,"SemB");
 
 // -------- Varables "Normales" -----------
 
@@ -48,9 +49,17 @@ int off = 0;
 
 // ----- Variables Compartidas -------
 
-char *horaSendero = (char*)crearMemoriaCompartida(sizeof (char*));
+char *horaDerecha = (char*)crearMemoriaCompartida(sizeof (char*));
+char *horaIzquierda = (char*)crearMemoriaCompartida(sizeof (char*));
+
 int *sentidoSendero = (int*)crearMemoriaCompartida(sizeof (int*));
+char *horaSendero = (char*)crearMemoriaCompartida(sizeof (char*));
+
 int *estadoProcesoHermano = (int*)crearMemoriaCompartida(sizeof (int*));
+
+//Para la condición de las 10 bicicletas en un mismo sentido
+int *cantidadMaximaBicicletas = (int*)crearMemoriaCompartida(sizeof (int*));
+
 
 
 int main(){
@@ -60,10 +69,7 @@ int main(){
 
    inicializarVariablesGlobales();
 
-
-
-   //borrarSemaforo(Semaforo, semName);
-   printf(" HOLA!!!!!!!!!!! \n\n");
+   printf("EPALEEEEEEEEE \n\n");
 
    pid_t pid1, pid2;
    Bicicleta *b1, *b2;
@@ -93,8 +99,9 @@ int main(){
 
 
    if(pid1 != 0){
-      borrarSemaforo(SemI, "Izquierda");
-      borrarSemaforo(SemD, "Derecha");
+      borrarSemaforo(mutex, "Mutex");
+      borrarSemaforo(semA, "SemA");
+      borrarSemaforo(semB, "SemB");
    }
       
    printf("\n\n");
@@ -115,17 +122,31 @@ void bisRigth(){
       aux = obtenerBici(derecha,&posD);
 
       if(aux == NULL){
-         up(SemI);
+         up(mutex);
          break;
       }
 
-      verificarHora(aux,SemD,SemI);
+      strcpy(horaDerecha,aux->hora);
 
-      //Asignar un sendero al sendero
-      *sentidoSendero = aux->sentido;
+      elegirCamino(aux,derecha);
 
-      posD++;
+
       imprimirBici(aux);
+      strcpy(horaSendero,aux->hora);
+
+      contarBicicleta(derecha);
+
+      if(*cantidadMaximaBicicletas == 0){
+
+         if(aux->sentido == izquierda)
+            strcpy(horaIzquierda,aux->hora);
+         else
+            strcpy(horaDerecha,aux->hora); 
+
+      } 
+
+      *sentidoSendero = derecha;
+      posD++;
 
    }
 
@@ -137,29 +158,47 @@ void bisRigth(){
 }
 
 
-
 void bisLeft(){
 
 
    int posI = 0;
    Bicicleta* aux;
 
+   //sumarDOSunidades();
+
    while(1 == 1){
 
       aux = obtenerBici(izquierda,&posI);
 
       if(aux == NULL){
-         up(SemD);
+         up(mutex);
          break;
       }
 
-      verificarHora(aux,SemI,SemD);
+      //printf("CUANTAS \n");
 
-      //Asignar un sendero al sendero
-      *sentidoSendero = aux->sentido;
+      strcpy(horaIzquierda,aux->hora);
 
-      posI++;
+      elegirCamino(aux,izquierda);
+
+
       imprimirBici(aux);
+      strcpy(horaSendero,aux->hora);
+      
+      contarBicicleta(aux->sentido);
+
+      if(*cantidadMaximaBicicletas == 0){
+
+         if(aux->sentido == izquierda)
+            strcpy(horaIzquierda,aux->hora);
+         else
+            strcpy(horaDerecha,aux->hora); 
+
+      }     
+
+
+      *sentidoSendero = izquierda;
+      posI++;
 
    }
 
@@ -171,8 +210,100 @@ void bisLeft(){
 }
 
 
+void elegirCamino(Bicicleta *bici, int direccion){
+
+   int repetir = off;
+
+   down(mutex);
+
+   if(*cantidadMaximaBicicletas == 0){
+
+      if(direccion == *sentidoSendero)
+         repetir = on;
+
+      else{
+         sumarDOSunidades();
+
+         *cantidadMaximaBicicletas = 10;
+ 
+         if(direccion == izquierda)
+            strcpy(horaIzquierda,bici->hora);
+         else
+            strcpy(horaDerecha,bici->hora);
+
+      }
+      
+   }
+
+   else{
+
+      if(direccion == izquierda)
+         strcpy(bici->hora,horaIzquierda);
+      else
+         strcpy(bici->hora,horaDerecha);
+
+   }
+
+
+   if(*estadoProcesoHermano == on){
+      
+      int respuesta = strcmp(horaIzquierda,horaDerecha);
+      //printf("HoraI: %s  HoraD: %s Respuesta: %i \n", horaIzquierda, horaDerecha,respuesta);
+
+      if( (respuesta < 0)&&(direccion == derecha) )
+         repetir = on;
+      else
+         if( (respuesta > 0)&&(direccion == izquierda) )
+            repetir = on;
+         else
+            if(respuesta == 0){
+
+               //La segunda parte de la condición solo funciona cuando NO ha cruzado ninguna bicicleta
+               if( (bici->sentido == *sentidoSendero)||(*sentidoSendero == -1) ){
+
+                  //("HORAS: %s %s \n",horaIzquierda,horaDerecha);
+
+                  char *horaAumentada = sumarUNAunidad(bici->hora);
+                  //bici->hora = sumarUNAunidad(bici->hora);
+                  //repetir = on;
+
+                  if(direccion == izquierda)
+                     strcpy(horaDerecha,horaAumentada);
+                  else
+                     strcpy(horaIzquierda,horaAumentada);
+
+               }
+               else
+                  repetir = on;
+
+            }
+
+   }
+
+   //Mi hora es menor o igual a la última hora en el sendero
+   if( (repetir == off)&&(strcmp(bici->hora,horaSendero) <= 0) ){
+      bici->hora = sumarUNAunidad(bici->hora);
+
+      if(direccion == derecha)
+         strcpy(horaDerecha,bici->hora);
+      else
+         strcpy(horaIzquierda,bici->hora);
+
+      repetir = on;
+   }
+
+
+   up(mutex);
+
+   if(repetir == on)
+      elegirCamino(bici, direccion); 
+
+}
+
+
 
 void* crearMemoriaCompartida(size_t size) {
+
 
    int proteccion = PROT_READ | PROT_WRITE;
    //El buffer de la memoria será de Lectura y Escrituta
@@ -190,46 +321,48 @@ void* crearMemoriaCompartida(size_t size) {
 void inicializarVariablesGlobales(){
 
    *estadoProcesoHermano = on;
+
    *sentidoSendero = -1;
    strcpy(horaSendero,"");
 
-}
+   strcpy(horaDerecha,"");
+   strcpy(horaIzquierda,"");
 
-
-void verificarHora(Bicicleta *aux, sem_t *semPropio, sem_t *semHermano){
-
-   //Entra la primera vez
-   if(strcmp("",horaSendero) == 0){
-      strcpy(horaSendero,aux->hora);
-      down(semPropio); 
-   }
-
-   //Ya existe una hora en el sendero
-   else{
-
-      int respuesta = strcmp(aux->hora,horaSendero);
-
-      if( (respuesta > 0)&&(verificarEstadoProcesoHermano() == 0) ){
-
-         strcpy(horaSendero,aux->hora);
-         up(semHermano);
-         down(semPropio);
-
-      }
-
-   }
-
+   *cantidadMaximaBicicletas = 10;
 
 }
 
 
-int verificarEstadoProcesoHermano(){
 
-   //Se debe verificar que el proceso hermano siga vivo
-   if(*estadoProcesoHermano == off)
-      return 1;
-   else
-      return 0;
+char* sumarUNAunidad(char *horaBici){
+
+   int horaInt, minutoInt, size = 15;
+   char *horaChar, *minutoChar;
+
+   //Extrae las horas y minutos de la hora total de la bici
+   horaChar = subString(horaBici,0,1);
+   minutoChar = subString(horaBici,3,4);
+
+   //Convierte los char en int
+   horaInt = atoi (horaChar);
+   minutoInt = atoi (minutoChar);
+
+   minutoInt++;
+   if(minutoInt == 60){
+      minutoInt = 0;
+      horaInt++;
+   }
+
+   //Convierte los int en char (Ya aumentados en UNA unidad)
+   snprintf(horaChar,size,"%d",horaInt);
+   snprintf(minutoChar,size,"%d",minutoInt);
+
+   //Concatena la hora y minuto
+   strcat(horaChar,":");
+   strcat(horaChar,minutoChar);
+
+   //Retorna la hora Total
+   return horaChar;
 
 }
 
@@ -258,20 +391,37 @@ void imprimirBici(Bicicleta *aux){
 }
 
 
-int verificarSentido(Bicicleta *aux){
 
-   //Se debe verificar que el proceso hermano siga vivo
-   if(*estadoProcesoHermano == off)
-      return 1;
-   else
-      return 0;
+void contarBicicleta(int sentidoActual){
 
-   //if(*sentidoSendero == aux->sentido)
-     // return 1;
-   //else
-     // return 0; 
+   if(*sentidoSendero != sentidoActual)
+      *cantidadMaximaBicicletas = 10;
+
+   (*cantidadMaximaBicicletas)--;
+
+   if(*cantidadMaximaBicicletas == 0){
+      printf("ESPERANDO QUE SALGAN LAS 10 BICICLETAS!!! \n ");
+      sumarDOSunidades();
+   }
 
 }
+
+
+void sumarDOSunidades(){
+
+   Bicicleta *aux = b;
+
+   while(aux != NULL){
+
+      aux->hora = sumarUNAunidad(aux->hora);
+      aux->hora = sumarUNAunidad(aux->hora);
+
+      aux = aux->prox;
+
+   }
+
+}
+
 
 
 
