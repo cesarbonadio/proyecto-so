@@ -391,9 +391,9 @@ void guardarBicicleta(Bicicleta *aux){
       const char *horaCompleta;
 
       if(aux->sentido == izquierda)
-         horaCompleta = strcat(aux->hora," L \n");
+         horaCompleta = strcat(aux->hora," L\n");
       else
-         horaCompleta = strcat(aux->hora," R \n");
+         horaCompleta = strcat(aux->hora," R\n");
 
       fputs(horaCompleta,archivo);
 
