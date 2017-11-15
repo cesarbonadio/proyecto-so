@@ -23,8 +23,6 @@ void inicializarVariablesGlobales();
 void* crearMemoriaCompartida(size_t size);
 
 char* aumentarHora(char *horaBici, int aumento);
-void aumentarDOSunidades();
-
 void contarBicicletaMismoSentido(int sentidoActual);
 
 void guardarBicicleta(Bicicleta *aux);
@@ -192,43 +190,10 @@ void elegirCamino(Bicicleta *bici, int direccion){
 
    down(mutex);
 
-   //En caso de que hayan pasado 10 bicicletas en un mismo sentido
-   if(*cantidadMaximaBicicletas == 0){
-
-      //Esta validación se hace con el objetivo de que solo queden bicicletas en un sentido
-      if(*estadoProcesoHermano == ON){
-
-         if(direccion == *sentidoSendero)
-            repetir = ON;
-
-         else{
-            //Se vuelve a aumentar, ya que esta variable no está por referencia
-            aumentarDOSunidades();
-
-            *cantidadMaximaBicicletas = 10;
- 
-            //Se actualizan las horas
-            if(direccion == izquierda)
-               strcpy(horaIzquierda,bici->hora);
-            else
-               strcpy(horaDerecha,bici->hora);
-
-         }
-
-      }
-      else
-         *cantidadMaximaBicicletas = 10;
-      
-   }
-
-   else{
-
-      if(direccion == izquierda)
-         strcpy(bici->hora,horaIzquierda);
-      else
-         strcpy(bici->hora,horaDerecha);
-
-   }
+   if(direccion == izquierda)
+      strcpy(bici->hora,horaIzquierda);
+   else
+      strcpy(bici->hora,horaDerecha);
 
 
    if(*estadoProcesoHermano == ON){
@@ -345,20 +310,6 @@ char* aumentarHora(char *horaBici, int aumento){
 }
 
 
-void aumentarDOSunidades(){
-
-   Bicicleta *aux = b;
-
-   while(aux != NULL){
-
-      aumentarHora(aux->hora,2);
-      aux = aux->prox;
-
-   }
-
-}
-
-
 
 void contarBicicletaMismoSentido(int sentidoActual){
 
@@ -370,7 +321,9 @@ void contarBicicletaMismoSentido(int sentidoActual){
 
    if(*cantidadMaximaBicicletas == 0){
       printf("ESPERANDO QUE SALGAN LAS 10 BICICLETAS!!! \n");
-      aumentarDOSunidades();
+      //Se aumenta la hora del sendero en 2 segundos, para que todas las bicicletas esperen
+      strcpy( horaSendero,aumentarHora(horaSendero,2) );
+      *cantidadMaximaBicicletas = 10;
    }
 
 }
