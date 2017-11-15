@@ -38,17 +38,23 @@ void *fun(void *entero){ //funcion que ejecutan los hilos (propia del pronlema 2
 
 int main (int argc, char *argv[]){
 
- int h[3];//vector h va a contener los enteros de entrada
+ int h[4];//vector h va a contener los enteros de entrada
 
 
- if (argc!=3) {mostrarerror2();}
+ if (argc!=4) {mostrarerror2();}
 
 
  else{
 
-  for (int i=1; i<argc; i++)h[i]=atoi(argv[i]); 
-  for (int i=0; i<argc; i++)printf ("%i\t",h[i]);
-  for (int i=0; i<argc; i++)printf ("%s\t",argv[i]);
+  for (int i=1; i<argc; i++){
+    h[i]=atoi(argv[i]);
+    } 
+  for (int i=0; i<argc; i++){
+    printf ("%i\t",h[i]);
+    }
+  for (int i=0; i<argc; i++){
+    printf ("%s\t",argv[i]);
+  }
   printf ("\n\n\n");	
 
 
@@ -61,7 +67,7 @@ int main (int argc, char *argv[]){
 
 
 
-  if (!((h[2]>=1)&&(h[2]<=10))){ //evalua si n hilos cumplen que 1<=n<=10
+  if (!((h[3]>=1)&&(h[3]<=10))){ //evalua si n hilos cumplen que 1<=n<=10
     printf("\n Error. Hilos deben estar entre 1 y 10\n\n");
   }
 
@@ -69,7 +75,7 @@ int main (int argc, char *argv[]){
 
 
   else{
-  int cant_trabajadores = h[2]; //cantidad de trabajadores procesos/hilos del proceso principal
+  int cant_trabajadores = h[3]; //cantidad de trabajadores procesos/hilos del proceso principal
   int trabajo = cant_lineas/cant_trabajadores; 
   int trabajo_n_1 = trabajo + (cant_lineas%cant_trabajadores);
 

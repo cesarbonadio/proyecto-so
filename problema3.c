@@ -32,8 +32,12 @@ int main (int argc, char *argv[]){
 
  else {
 
-  for (int i=1; i<argc; i++)h[i]=atoi(argv[i]); 
-  for (int i=0; i<argc; i++)printf ("%i\t",h[i]);
+  for (int i=1; i<argc; i++){ // de caraceter a entero
+    h[i]=atoi(argv[i]);
+    } 
+  for (int i=0; i<argc; i++){
+    printf ("%i\t",h[i]);
+  }
   printf ("%s",argv[2]);
   printf ("\n\n\n");	
 
@@ -48,7 +52,7 @@ int main (int argc, char *argv[]){
 
 
 
- if ( (strcmp(argv[2],"-p")!=0)  ||  (!((h[3]>=1)&&(h[3]<=10))) ) {mostrarerror3();}
+ if (!((h[3]>=1)&&(h[3]<=10))){mostrarerror3();}
 
 
 
@@ -63,7 +67,7 @@ int main (int argc, char *argv[]){
 
 
 
-if (strcmp(argv[2],"-p")==0){
+
     printf ("\n\nQuiero ejecutar procesos\n");
     printf ("Proceso padre: %i \n\n\n", getpid());
 
@@ -93,6 +97,11 @@ if (strcmp(argv[2],"-p")==0){
      funpro(inter);
       break;
     }
+
+    if (id < 0){
+      printf ("Error creando uno de los procesos");
+      exit(-1);
+    }
     
   }
 
@@ -102,15 +111,10 @@ if (strcmp(argv[2],"-p")==0){
     while(1);
    } 
 
-
     else if (id < 0){ // Error creando procesos
     printf ("Error creando procesos");
     exit(-1);
    }
-
-
-}// es proceso
-
 
 
    }

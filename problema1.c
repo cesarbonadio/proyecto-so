@@ -11,6 +11,7 @@
 #include <sys/wait.h>
 
 #include "cabecera123.h"
+/*Cabecera del programa con los demás métodos*/
 
 
 /*Proyecto de sistemas de operacion (problema 1)
@@ -25,6 +26,19 @@ struct timeval t0,t1 ; //estructuras para medir los tiempos de ejecucion
 double media = 0.0;
 
 
+/*
+    struct tm {
+      int tm_sec;   // seconds of minutes from 0 to 61
+      int tm_min;   // minutes of hour from 0 to 59
+      int tm_hour;  // hours of day from 0 to 24
+      int tm_mday;  // day of month from 1 to 31
+      int tm_mon;   // month of year from 0 to 11
+      int tm_year;  // year since 1900
+      int tm_wday;  // days since sunday
+      int tm_yday;  // days since January 1st
+      int tm_isdst; // hours of daylight savings time
+    }
+*/
 
 
 
@@ -83,17 +97,23 @@ void *fun(void *entero){ //funcion que ejecutan los hilos (propia del problema 1
 
 int main (int argc, char *argv[]){
 
- int h[4];//vector h va a contener los enteros de entrada
+ int h[5];//vector h va a contener los enteros de entrada
 
 
- if (argc!=4) {mostrarerror();} // si no hay 4 argumentos hay error
+ if (argc!=5) {mostrarerror();} // si no hay 5 argumentos hay error
 
 
 
  else {
 
-  for (int i=1; i<argc; i++)h[i]=atoi(argv[i]); 
-  for (int i=0; i<argc; i++)printf ("%i\t",h[i]);
+  for (int i=1; i<argc; i++){ //de caracter a eentero
+    h[i]=atoi(argv[i]);
+  }
+
+  for (int i=0; i<argc; i++){
+    printf ("%i\t",h[i]);
+  }
+
   printf ("%s",argv[2]);
   printf ("\n\n\n");	
 
@@ -118,13 +138,16 @@ int main (int argc, char *argv[]){
 
 
 
- if (((strcmp(argv[2],"-t")!=0)&&((strcmp(argv[2],"-p")!=0)))||(!((h[3]>=1)&&(h[3]<=10)))){mostrarerror();}
+ if (((strcmp(argv[2],"-t")!=0)
+    &&((strcmp(argv[2],"-p")!=0)))
+    ||(!((h[4]>=1)&&(h[4]<=10))))
+  {mostrarerror();}
 
 
 
  else{
 
-  int cant_trabajadores = h[3]; //cantidad de trabajadores procesos/hilos del proceso principal
+  int cant_trabajadores = h[4]; //cantidad de trabajadores procesos/hilos del proceso principal
   int trabajo = cant_lineas/cant_trabajadores; 
   int trabajo_n_1 = trabajo + (cant_lineas%cant_trabajadores);
   int d1 = 1 - trabajo; //d1 es desde donde va a leer el hilo/proceso
@@ -132,6 +155,9 @@ int main (int argc, char *argv[]){
 
 
 
+
+
+ /*En caso de ser hilos...*/
 
 
   if (strcmp(argv[2],"-t")==0){
@@ -196,7 +222,7 @@ int main (int argc, char *argv[]){
 
 
 
-
+/*En caso de ser procesos...*/
 
 else if (strcmp(argv[2],"-p")==0){
 
@@ -228,7 +254,7 @@ else if (strcmp(argv[2],"-p")==0){
 
         id = fork ();
 
-      if ( id == 0) {
+      if ( id == 0) { // si es hijo , ejecuta la función y se rompe para que no cree un hijo propio
      funpro(inter);
       break;
       }
@@ -260,7 +286,7 @@ else if (strcmp(argv[2],"-p")==0){
     printf ("Error creando procesos");
     exit(-1);
    }
-} // termina el caso de ser procesos
+} 
 
 
 
