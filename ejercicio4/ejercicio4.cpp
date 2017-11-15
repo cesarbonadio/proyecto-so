@@ -33,8 +33,8 @@ sem_t *mutex = inicializarSemaforo(1,"Mutex");
 
 // -------- Varables "Normales" -----------
 
-const char *ubicacion = "entrada2.txt";
-const char *ubicacion2 = "salida.txt";
+const char *ubicacionEntrada = "entrada2.txt";
+const char *ubicacionSalida = "salida.txt";
 
 //Estados
 int ON = 1;
@@ -58,7 +58,7 @@ int *cantidadMaximaBicicletas = (int*)crearMemoriaCompartida(sizeof (int*));
 
 int main(){
 
-   cargarArchivotxt(ubicacion);
+   cargarArchivotxt(ubicacionEntrada);
    //Carga el archivo txt en la estructura Bicicleta
 
    inicializarVariablesGlobales();
@@ -320,7 +320,23 @@ void contarBicicletaMismoSentido(int sentidoActual){
    (*cantidadMaximaBicicletas)--;
 
    if(*cantidadMaximaBicicletas == 0){
-      printf("ESPERANDO QUE SALGAN LAS 10 BICICLETAS!!! \n");
+
+      FILE *archivo;
+      archivo = fopen (ubicacionSalida, "a");
+
+      if (archivo == NULL){
+         printf("ERROR en la apertura del archivo \n\n");
+         exit(EXIT_FAILURE);
+      }
+      else{
+
+         //Se imprime el mensaje en el archivo
+         fputs("Esperando que salgan las últimas 10 \n",archivo);
+
+         fclose(archivo);
+
+      }
+
       //Se aumenta la hora del sendero en 2 segundos, para que todas las bicicletas esperen
       strcpy( horaSendero,aumentarHora(horaSendero,2) );
       *cantidadMaximaBicicletas = 10;
@@ -333,7 +349,7 @@ void contarBicicletaMismoSentido(int sentidoActual){
 void guardarBicicleta(Bicicleta *aux){
 
    FILE *archivo;
-   archivo = fopen (ubicacion2, "a");
+   archivo = fopen (ubicacionSalida, "a");
 
    if (archivo == NULL){
       printf("ERROR en la apertura del archivo \n\n");
