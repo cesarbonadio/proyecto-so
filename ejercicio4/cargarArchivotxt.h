@@ -20,7 +20,6 @@ const int izquierda = 1;
 Bicicleta* cargarArchivotxt(const char *ubicacion);
 
 Bicicleta* agregarBicicleta(Bicicleta *b, char *bici);
-Bicicleta* obtenerBicicletaConSentido(int sentido,int *minimo);
 
 char* subString(char *cadenaFuente, int desde, int hasta);
 int obtenerSentido(char *cadenaFuente);
@@ -91,23 +90,6 @@ Bicicleta* agregarBicicleta(Bicicleta *b, char *bici){
 
    return b;
 
-
-}
-
-
-Bicicleta* obtenerBicicletaConSentido(int sentido,int *minimo){
-
-   Bicicleta *aux = b;
-   int posicion = 0;
-
-   while( (aux != NULL) && ( (posicion < *minimo)||(aux->sentido != sentido) ) ){
-      aux = aux->prox;
-      posicion++;
-   }
-
-   *minimo = posicion;
-
-   return aux;
 
 }
 
