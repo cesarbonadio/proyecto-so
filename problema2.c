@@ -127,11 +127,8 @@ if (!inter){
       exit(-1);
     }
 
-  }
-   
+    pthread_join(hilos[i],NULL);// se van uniendo todos los hilos
 
-  for (int i=1; i<=cant_trabajadores; i++){	
-  pthread_join(hilos[i],NULL);// se van uniendo todos los hilos
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
 

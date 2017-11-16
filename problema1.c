@@ -23,20 +23,20 @@
 
 
 struct timeval t0,t1 ; //estructuras para medir los tiempos de ejecucion
-double media = 0.0;
+double media = 0.0;// variable global que mide el tiempo de los hilos
 
 
 /*
-    struct tm {
-      int tm_sec;   // seconds of minutes from 0 to 61
-      int tm_min;   // minutes of hour from 0 to 59
-      int tm_hour;  // hours of day from 0 to 24
-      int tm_mday;  // day of month from 1 to 31
-      int tm_mon;   // month of year from 0 to 11
-      int tm_year;  // year since 1900
-      int tm_wday;  // days since sunday
-      int tm_yday;  // days since January 1st
-      int tm_isdst; // hours of daylight savings time
+    struct timeval {
+      int tv_sec;   // seconds of minutes from 0 to 61
+      int tv_min;   // minutes of hour from 0 to 59
+      int tv_hour;  // hours of day from 0 to 24
+      int tv_mday;  // day of month from 1 to 31
+      int tv_mon;   // month of year from 0 to 11
+      int tv_year;  // year since 1900
+      int tv_wday;  // days since sunday
+      int tv_yday;  // days since January 1st
+      int tv_isdst; // hours of daylight savings time
     }
 */
 
@@ -68,8 +68,10 @@ void *fun(void *entero){ //funcion que ejecutan los hilos (propia del problema 1
 
 
      for (int i=(inter->desde)-1; i<(inter->hasta); i++){
+
            if (esprimo(numeros_archivo[i])){
             fprintf(archivo, "%i %i\n", numeros_archivo[i], 1);
+
           }else{
             fprintf(archivo, "%i %i\n", numeros_archivo[i], 0);
           }   
@@ -150,6 +152,7 @@ int main (int argc, char *argv[]){
   int cant_trabajadores = h[4]; //cantidad de trabajadores procesos/hilos del proceso principal
   int trabajo = cant_lineas/cant_trabajadores; 
   int trabajo_n_1 = trabajo + (cant_lineas%cant_trabajadores);
+
   int d1 = 1 - trabajo; //d1 es desde donde va a leer el hilo/proceso
   int d2 = 0; //d2 es hasta donde va a leer el hilo/proceso
 
@@ -232,6 +235,7 @@ else if (strcmp(argv[2],"-p")==0){
 
     int i = 0;
     int id = -1;
+
     gettimeofday (&t0,NULL);
 
 
