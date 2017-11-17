@@ -1,4 +1,5 @@
-﻿#include <stdlib.h>
+﻿
+#include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <math.h>
@@ -117,15 +118,15 @@ int main (int argc, char *argv[]){
   }
 
   printf ("%s",argv[2]);
-  printf ("\n\n\n");	
+  printf ("\n\n\n");  
 
 
-  	/*Documentacion de los vectores argv , h y el entero argc
-  	 *
-  	 * argv guarda todos los datos de entrada por espacios, sean strings , caracteres o enteros.
-  	 * h guarda los enteros de argv , cuya posicion del entero no cambia en ambos, sigue siendo la misma.
-  	 * argc guarda la cantidad de datos de entrada(entero). Ejemplo: ./ejecutable 87 p => argc= 3.
-  	 */
+    /*Documentacion de los vectores argv , h y el entero argc
+     *
+     * argv guarda todos los datos de entrada por espacios, sean strings , caracteres o enteros.
+     * h guarda los enteros de argv , cuya posicion del entero no cambia en ambos, sigue siendo la misma.
+     * argc guarda la cantidad de datos de entrada(entero). Ejemplo: ./ejecutable 87 p => argc= 3.
+     */
 
 
 
@@ -238,6 +239,9 @@ else if (strcmp(argv[2],"-p")==0){
 
     gettimeofday (&t0,NULL);
 
+    pid_t hijos[cant_trabajadores];
+    int estado[cant_trabajadores];
+
 
 
    for (i=1 ; i<=cant_trabajadores; i++) {
@@ -273,7 +277,11 @@ else if (strcmp(argv[2],"-p")==0){
    
    if ( id  >  0) { // padre
     
-    for (int i = 0;  i < cant_trabajadores; i++) waitpid(id, 0, 0);
+    for (int i = 0;  i < cant_trabajadores; i++) {
+      waitpid(getpid(), 0, 0);
+      hijos[i] = wait(&estado[i]);
+    }
+
     sleep(1);
 
     gettimeofday (&t1, NULL);

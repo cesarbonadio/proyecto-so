@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <signal.h>
+#include <sys/wait.h>
 
 #include "cabecera123.h"
 
@@ -74,6 +75,10 @@ int main (int argc, char *argv[]){
     int i = 0;
     int id = -1;
 
+    pid_t hijos[cant_trabajadores];
+    int estado[cant_trabajadores];
+    
+
 
    for ( i=1 ; i <=cant_trabajadores; i++) {
     
@@ -93,20 +98,25 @@ int main (int argc, char *argv[]){
 
         id = fork ();
 
-      if ( id == 0) {
-     funpro(inter);
-      break;
-    }
+        if ( id == 0) {
+         signal(SIGINT, SIG_IGN);
+         funpro(inter);
+        break; 
+        }
 
-    if (id < 0){
-      printf ("Error creando uno de los procesos");
-      exit(-1);
-    }
+        if (id < 0){
+         printf ("Error creando uno de los procesos");
+         exit(-1);
+       }
     
   }
 
 
-   if ( id != 0) {
+   if ( id > 0) {
+     for (int i = 0;  i < cant_trabajadores; i++) {
+      waitpid(getpid(), 0, 0);
+      hijos[i] = wait(&estado[i]);
+    }
     signal(SIGINT, catch_signal_ctrlC);
     while(1);
    } 

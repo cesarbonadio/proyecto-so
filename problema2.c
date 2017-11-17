@@ -28,7 +28,7 @@ void *fun(void *entero){ //funcion que ejecutan los hilos (propia del pronlema 2
             numero_primos++;}
      }
 
-     pthread_exit(NULL); 
+     pthread_exit(NULL); // termina la función del hilo
 }
 
 
@@ -127,10 +127,11 @@ if (!inter){
       exit(-1);
     }
 
-    pthread_join(hilos[i],NULL);// se van uniendo todos los hilos
+
+     pthread_join(hilos[i],NULL);// se van uniendo todos los hilos. Espera por el termino de todos los hilos
 
   }
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+   
 
 
 
