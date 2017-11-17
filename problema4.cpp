@@ -6,10 +6,16 @@
 
 //---------- Librerías de C -----------
 
-
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/mman.h>
+
+
+/*Proyecto de sistemas de operacion (problema 4)
+ * Integrantes:
+ * - César Bonadío
+ * - Miguel Ordoñez
+ */
 
 
 //---------- Cabecera de funciones -----------
@@ -19,6 +25,7 @@ void bisLeft();
 void sendero();
 
 void inicializarVariablesGlobales();
+void liberarMemoria();
 void* crearMemoriaCompartida(size_t size);
 
 char* aumentarHora(char *horaBici, int aumento);
@@ -27,7 +34,7 @@ void contarBicicletaMismoSentido(int sentidoActual);
 Bicicleta* obtenerBicicletaConSentido(int sentido);
 void guardarBicicleta(char *hora, int sentido);
 
-// --------- Semáforo ---------
+// --------- Semáforos ---------
 
 const char *SemNameA = "SemA";
 const char *SemNameB = "SemB";
@@ -62,10 +69,8 @@ int *procesoSendero = (int*)crearMemoriaCompartida(sizeof (int*));
 //Para la condición de las 10 bicicletas en un mismo sentido
 int *cantidadMaximaBicicletas = (int*)crearMemoriaCompartida(sizeof (int*));
 
-
 int *posD = (int*)crearMemoriaCompartida(sizeof (int*));
 int *posI = (int*)crearMemoriaCompartida(sizeof (int*));
-
 
 
 int main(){
@@ -105,11 +110,8 @@ int main(){
 
 
    //El padre borra el semáforo una vez terminado el programa
-   if(pid != 0){
-      borrarSemaforo(semA, SemNameA);
-      borrarSemaforo(semB, SemNameB);
-      borrarSemaforo(semC, SemNameC);
-   }
+   if(pid != 0)
+      liberarMemoria();
       
    printf("\n\n");
    return 0;
@@ -153,7 +155,7 @@ void bisLeft(){
 
       down(semB);
 
-      //Obtiene una bicicleta con sentido derecho
+      //Obtiene una bicicleta con sentido izquierdo
       aux = obtenerBicicletaConSentido(izquierda);
 
       if(aux != NULL)
@@ -181,19 +183,23 @@ void sendero(){
 
       down(semC);
 
+      /*En caso de que existan 2 bicicletas (R y L) se procede a compararlas para ver cual tiene mas prioridad*/
       if( (*procesoDerecha == ON)&&(*procesoIzquierda == ON) ){
 
          respuesta = strcmp(horaIzquierda,horaDerecha);
 
+         //horahoraIzquierda MENOR QUE horaDerecha
          if(respuesta < 0){
             (*posI)++;
             guardarBicicleta(horaIzquierda,izquierda);
          }
          else
+            //horahoraIzquierda MAYOR QUE horaDerecha
             if(respuesta > 0){
                (*posD)++;
                guardarBicicleta(horaDerecha,derecha);
             }
+            //horahoraIzquierda IGUAL QUE horaDerecha
             else{
 
                (*posD)++;
@@ -210,15 +216,18 @@ void sendero(){
 
             }
 
-      }//Comparar
+      }//Fin de la Comparación
 
+      //En caso de que solo exista una sola bicicleta, es decir, un solo sentido
       else{
 
+         //Si es una bicicleta derecha
          if(*procesoDerecha == ON){
             (*posD)++;
             guardarBicicleta(horaDerecha,derecha);
          }
          else
+            //Si es una bicicleta izquierda
             if(*procesoIzquierda == ON){
                (*posI)++;
                guardarBicicleta(horaIzquierda,izquierda);
@@ -228,6 +237,7 @@ void sendero(){
 
       up(semA);
 
+      //Caso de que ya no hayan bicicletas
       if( (*procesoDerecha == OFF)&&(*procesoIzquierda == OFF) ){
          *procesoSendero = OFF;
          break;
@@ -258,8 +268,48 @@ void inicializarVariablesGlobales(){
 }
 
 
-void* crearMemoriaCompartida(size_t size) {
+void liberarMemoria(){
 
+   /*munmap se encarga de liberar la memoria compartida creada con mmap, en caso de error devuelve -1 y en caso de éxito devuelve 0*/
+
+   if(munmap(horaDerecha, sizeof (char*)) != 0)
+      printf("ERROR... Al eliminar horaDerecha \n"); 
+
+   if(munmap(horaIzquierda, sizeof (char*)) != 0)
+      printf("ERROR... Al eliminar horaIzquierda \n"); 
+
+   if(munmap(sentidoSendero, sizeof (int*)) != 0)
+      printf("ERROR... Al eliminar sentidoSendero \n"); 
+
+   if(munmap(horaSendero, sizeof (char*)) != 0)
+      printf("ERROR... Al eliminar horaSendero \n"); 
+
+   if(munmap(procesoDerecha, sizeof (int*)) != 0)
+      printf("ERROR... Al eliminar procesoDerecha \n"); 
+
+   if(munmap(procesoIzquierda, sizeof (int*)) != 0)
+      printf("ERROR... Al eliminar procesoIzquierda \n");
+
+   if(munmap(procesoSendero, sizeof (int*)) != 0)
+      printf("ERROR... Al eliminar procesoSendero \n");
+
+   if(munmap(cantidadMaximaBicicletas, sizeof (int*)) != 0)
+      printf("ERROR... Al eliminar cantidadMaximaBicicletas \n");
+
+   if(munmap(posD, sizeof (int*)) != 0)
+      printf("ERROR... Al eliminar posD \n");
+
+   if(munmap(posI, sizeof (int*)) != 0)
+      printf("ERROR... Al eliminar posI \n");
+
+   borrarSemaforo(semA, SemNameA);
+   borrarSemaforo(semB, SemNameB);
+   borrarSemaforo(semC, SemNameC);
+
+}
+
+
+void* crearMemoriaCompartida(size_t size) {
 
    int proteccion = PROT_READ | PROT_WRITE;
    //El buffer de la memoria será de Lectura y Escrituta
@@ -302,7 +352,6 @@ char* aumentarHora(char *horaBici, int aumento){
 }
 
 
-
 void contarBicicletaMismoSentido(int sentidoActual){
 
    //Sentido contrario
@@ -329,7 +378,7 @@ void contarBicicletaMismoSentido(int sentidoActual){
 
       }
 
-      //Se aumenta la hora del sendero en 2 segundos, para que todas las bicicletas esperen
+      //Se aumenta la hora del sendero en 2 unidades, para que todas las bicicletas esperen
       strcpy( horaSendero,aumentarHora(horaSendero,2) );
       *cantidadMaximaBicicletas = 10;
    }
@@ -353,6 +402,8 @@ void guardarBicicleta(char *hora, int sentido){
       if( strcmp(horaSendero,"") == 0 ) 
           strcpy(horaSendero,hora);
       else{
+
+         //La hora actual es menor que la del sendero
          if( strcmp(hora,horaSendero) <= 0 )
             horaSendero = aumentarHora(horaSendero, 1);
          else
@@ -371,11 +422,11 @@ void guardarBicicleta(char *hora, int sentido){
 
    }
 
+   //Verifica si han circulado 10 bicicletas en el mismo sentido
    contarBicicletaMismoSentido(sentido);
    *sentidoSendero = sentido;
 
 }
-
 
 
 Bicicleta* obtenerBicicletaConSentido(int sentido){
@@ -384,6 +435,7 @@ Bicicleta* obtenerBicicletaConSentido(int sentido){
    int posicion = 0;
 
    int minimo;
+
 
    if(sentido == derecha)
       minimo = *posD;
@@ -404,6 +456,5 @@ Bicicleta* obtenerBicicletaConSentido(int sentido){
    return aux;
 
 }
-
 
 

@@ -61,7 +61,6 @@ de lo contrario, sale la alerta "Violación de segmento (`core' generado)" */
 }
 
 
-
 //NOTA: Se debe enviar el puntero b como NULL
 Bicicleta* agregarBicicleta(Bicicleta *b, char *bici){
 
@@ -118,7 +117,6 @@ char* subString(char *cadenaFuente, int desde, int hasta){
 }
 
 
-
 int obtenerSentido(char *cadenaFuente){
 
    char *sentidoChar;
@@ -134,8 +132,5 @@ int obtenerSentido(char *cadenaFuente){
    return sentidoInt;
 
 }
-
-
-
 
 

@@ -29,7 +29,6 @@ sem_t* inicializarSemaforo(int valor, const char *nombreSemaforo);
 void borrarSemaforo(sem_t *semaforo, const char *nombreSemaforo);
 void down(sem_t *semaforo);
 void up(sem_t *semaforo);
-int getValor(sem_t *semaforo);
 
 
 // ------- Implementación --------
@@ -50,7 +49,6 @@ sem_t* inicializarSemaforo(int valor, const char *nombreSemaforo){
    return semaforo;
 
 }
-
 
 
 void borrarSemaforo(sem_t *semaforo, const char *nombreSemaforo){
@@ -81,7 +79,6 @@ void borrarSemaforo(sem_t *semaforo, const char *nombreSemaforo){
 }
 
 
-
 void down(sem_t *semaforo){
    
    int error;
@@ -91,7 +88,6 @@ void down(sem_t *semaforo){
       printf("ERROR al disminuir el semaforo");
 
 }
-
 
 
 void up(sem_t *semaforo){
@@ -106,10 +102,3 @@ void up(sem_t *semaforo){
 
 
 
-int getValor(sem_t *semaforo){
-
-   int valor;
-   sem_getvalue (semaforo, &valor);
-   return valor;
-
-}
