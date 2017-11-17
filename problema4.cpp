@@ -302,6 +302,10 @@ void liberarMemoria(){
    if(munmap(posI, sizeof (int*)) != 0)
       printf("ERROR... Al eliminar posI \n");
 
+   //Se libera el puntero a la estructura de bicicletas
+   free(b);
+
+   //Se libera los semáforos
    borrarSemaforo(semA, SemNameA);
    borrarSemaforo(semB, SemNameB);
    borrarSemaforo(semC, SemNameC);
